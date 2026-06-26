@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Projeto Fitness</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: rgba(255, 255, 255, 0.08);
+      --card-border: rgba(255, 255, 255, 0.14);
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --primary: #22c55e;
+      --primary-dark: #16a34a;
+      --accent: #38bdf8;
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+      --radius: 20px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, Arial, sans-serif;
+      background:
+        radial-gradient(circle at top, rgba(56, 189, 248, 0.18), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(34, 197, 94, 0.12), transparent 30%),
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .page { display: none; }
+    .page.active { display: block; }
+
+    .hero {
+      display: grid;
+      gap: 18px;
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      line-height: 1.1;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1.05rem;
+    }
+
+    .emoji-flex {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .flipped { display: inline-block; transform: scaleX(-1); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(16px);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px;
+    }
+
+    h2, h3 {
+      margin-top: 0;
+    }
+
+    form {
+      display: grid;
+      gap: 12px;
+    }
+
+    label {
+      font-weight: 600;
+      color: #f8fafc;
+    }
+
+    input, select, button {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    input, select {
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+    }
+
+    input::placeholder { color: #cbd5e1; }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-top: 6px;
+    }
+
+    button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      font-weight: 700;
+      transition: 0.2s ease;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+
+    .secondary {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .secondary:hover {
+      background: rgba(255,255,255,0.16);
+    }
+
+    .result {
+      margin-top: 20px;
+      padding: 18px;
+      border-radius: 16px;
+      background: rgba(15, 23, 42, 0.55);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #f8fafc;
+    }
+
+    .workouts {
+      display: grid;
+      gap: 18px;
+    }
+
+    .workout-card ul {
+      padding-left: 18px;
+      margin: 0;
+      display: grid;
+      gap: 10px;
+    }
+
+    a.video-link {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    a.video-link:hover { text-decoration: underline; }
+
+    footer {
+      margin-top: 24px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 0.95rem;
+    }
+
+    #videoModal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 1000;
+    }
+
+    #videoModal.active { display: flex; }
+
+    .modal-content {
+      position: relative;
+      width: min(920px, 100%);
+      aspect-ratio: 16 / 9;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      background: #000;
+    }
+
+    #videoModal iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    .closeBtn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.55);
+      color: #fff;
+      border: 0;
+      font-size: 1.5rem;
+      z-index: 2;
+    }
+
+    @media (min-width: 900px) {
+      .grid {
+        grid-template-columns: 420px 1fr;
+        align-items: start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="pageHome" class="page active">
+      <div class="hero">
+        <div class="emoji-flex">
+          <span>💪</span>
+          <h1>Projeto Fitness: Aline Karoliny</h1>
+          <span class="flipped">💪</span>
+        </div>
+        <p>Emagrecimento, hipertrofia e treinos personalizados em um layout moderno.</p>
+      </div>
+
+      <div class="grid">
+        <section class="card">
+          <h2>📏 Suas Medidas</h2>
+          <form id="formMedidas">
+            <label for="altura">Altura (cm)</label>
+            <input type="number" id="altura" min="1" required />
+
+            <label for="peso">Peso (kg)</label>
+            <input type="number" id="peso" min="1" step="0.1" required />
+
+            <label for="idade">Idade</label>
+            <input type="number" id="idade" min="1" required />
+
+            <label for="sexo">Sexo</label>
+            <select id="sexo" required>
+              <option value="feminino">Feminino</option>
+              <option value="masculino">Masculino</option>
+            </select>
+
+            <label for="atividade">Nível de atividade</label>
+            <select id="atividade" required>
+              <option value="1.2">Sedentário</option>
+              <option value="1.375">Levemente ativo</option>
+              <option value="1.55">Moderadamente ativo</option>
+              <option value="1.725">Muito ativo</option>
+              <option value="1.9">Extremamente ativo</option>
+            </select>
+
+            <label for="objetivo">Objetivo</label>
+            <select id="objetivo" required>
+              <option value="leve">Emagrecimento leve</option>
+              <option value="moderado">Emagrecimento moderado</option>
+              <option value="intenso">Emagrecimento intenso</option>
+            </select>
+
+            <div class="actions">
+              <button type="button" onclick="calcularIMC()">Calcular IMC</button>
+              <button type="button" id="btnStart" class="secondary">Ver treinos</button>
+            </div>
+          </form>
+
+          <div id="resultado" class="result"></div>
+        </section>
+
+        <section class="card">
+          <h2>Destaques</h2>
+          <p style="color: var(--muted); line-height: 1.6;">
+            Acompanhe seu resultado, visualize treinos com vídeos e navegue por uma interface mais limpa e elegante.
+          </p>
+        </section>
+      </div>
+    </div>
+
+    <section id="pageTreinos" class="page">
+      <div class="card">
+        <h1>Treinos Personalizados</h1>
+
+        <div class="workouts">
+          <div class="workout-card">
+            <h2>Treino A – Inferiores</h2>
+            <ul>
+              <li>Agachamento Smith – 4x12 – <a href="#" class="video-link" data-video="https://www.youtube.com/embed/r_1TM-fycEI">Ver vídeo</a></li>
+              <li>Avanço com Halteres – 3x10 – <a href="#" class="video-link" data-video="https://www.youtube.com/embed/WuMsV60mnIQ">Ver vídeo</a></li>
+              <li>Cadeira Flexora – 3x12 – <a href="#" class="video-link" data-video="https://www.youtube.com/embed/tj1EvbOXg7I">Ver vídeo</a></li>
+            </ul>
+          </div>
+
+          <div class="workout-card">
+            <h2>Treino B – Superiores</h2>
+            <ul>
+              <li>Puxada na Frente – 4x10 – <a href="#" class="video-link" data-video="https://www.youtube.com/embed/4-PsgYmkDsM">Ver vídeo</a></li>
+              <li>Remada Unilateral – 3x10 – <a href="#" class="video-link" data-video="https://www.youtube.com/embed/cHcGXkTGtBY">Ver vídeo</a></li>
+              <li>Tríceps Corda – 3x12 – <a href="#" class="video-link" data-video="https://www.youtube.com/embed/jsntw4tVAgQ">Ver vídeo</a></li>
+            </ul>
+          </div>
+
+          <div class="workout-card">
+            <h2>Treino C – Inferiores</h2>
+            <ul>
+              <li>Agachamento Livre – 4x10 – <a href="#" class="video-link" data-video="https://www.youtube.com/embed/itucObZpMWk">Ver vídeo</a></li>
+              <li>Leg Press 45° – 4x12 – <a href="#" class="video-link" data-video="https://www.youtube.com/embed/ozlnkPinI3c">Ver vídeo</a></li>
+              <li>Panturrilha em Pé – 4x20 – <a href="#" class="video-link" data-video="https://www.youtube.com/embed/lMBvuEt4hW0">Ver vídeo</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="actions" style="margin-top: 24px;">
+          <button class="secondary" id="btnBack">← Voltar para o Início</button>
+        </div>
+
+        <footer>
+          Mantenha o foco. O progresso vem com consistência! <br />
+          <span class="flipped">💪</span> <span>💪</span><br />
+          Desenvolvido para Aline Karoliny • Projeto Fitness © 2025
+        </footer>
+      </div>
+    </section>
+  </div>
+
+  <div id="videoModal" role="dialog" aria-modal="true" aria-labelledby="videoTitle">
+    <div class="modal-content">
+      <button class="closeBtn" aria-label="Fechar vídeo">&times;</button>
+      <iframe src="" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+    </div>
+  </div>
+
+  <script>
+    function showTime() {
+      const el = document.getElementById('currentTime');
+      if (el) el.textContent = new Date().toLocaleTimeString('pt-BR');
+    }
+    showTime();
+    setInterval(showTime, 1000);
+
+    function calcularIMC() {
+      const altura = parseFloat(document.getElementById('altura').value) / 100;
+      const peso = parseFloat(document.getElementById('peso').value);
+      const idade = parseInt(document.getElementById('idade').value, 10);
+      const sexo = document.getElementById('sexo').value;
+      const atividade = parseFloat(document.getElementById('atividade').value);
+      const objetivo = document.getElementById('objetivo').value;
+
+      if (!altura || !peso || !idade) return;
+
+      const imc = peso / (altura * altura);
+      const tmb = sexo === 'feminino'
+        ? 655 + (9.6 * peso) + (1.8 * (altura * 100)) - (4.7 * idade)
+        : 66 + (13.7 * peso) + (5 * (altura * 100)) - (6.8 * idade);
+
+      const tdee = tmb * atividade;
+      const deficit = objetivo === 'leve' ? 300 : objetivo === 'moderado' ? 500 : 700;
+      const meta = tdee - deficit;
+
+      document.getElementById('resultado').innerHTML = `
+        <strong>IMC:</strong> ${imc.toFixed(2)}<br>
+        <strong>TMB:</strong> ${tmb.toFixed(2)} kcal<br>
+        <strong>TDEE:</strong> ${tdee.toFixed(2)} kcal<br>
+        <strong>Meta calórica:</strong> ${meta.toFixed(2)} kcal/dia
+      `;
+
+      const desejaEnviar = confirm('Deseja encaminhar o resultado por e-mail?');
+      if (desejaEnviar) {
+        const email = prompt('Informe seu e-mail:');
+        if (email) alert(`Resultado preparado para envio para: ${email}`);
+      }
+    }
+
+    const pageHome = document.getElementById('pageHome');
+    const pageTreinos = document.getElementById('pageTreinos');
+
+    document.getElementById('btnStart').addEventListener('click', () => {
+      pageHome.classList.remove('active');
+      pageTreinos.classList.add('active');
+      window.scrollTo(0, 0);
+    });
+
+    document.getElementById('btnBack').addEventListener('click', () => {
+      pageTreinos.classList.remove('active');
+      pageHome.classList.add('active');
+      window.scrollTo(0, 0);
+    });
+
+    const videoModal = document.getElementById('videoModal');
+    const modalIframe = videoModal.querySelector('iframe');
+    const closeBtn = videoModal.querySelector('.closeBtn');
+
+    document.querySelectorAll('.video-link').forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        modalIframe.src = `${link.dataset.video}?autoplay=1&rel=0`;
+        videoModal.classList.add('active');
+      });
+    });
+
+    function closeModal() {
+      modalIframe.src = '';
+      videoModal.classList.remove('active');
+    }
+
+    closeBtn.addEventListener('click', closeModal);
+
+    videoModal.addEventListener('click', e => {
+      if (e.target === videoModal) closeModal();
+    });
+  </script>
+</body>
+</html>
